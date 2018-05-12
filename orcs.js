@@ -3,7 +3,7 @@ var canvas = document.getElementById('canvas');
 var ctx = canvas.getContext("2d");
 ctx.fillStyle = "white";
 var game = {
-  points: 0,
+  score: 0,
 };
 var orcs = [];
 
@@ -16,18 +16,24 @@ function Orc(x, y) {
   this.y = y;
   this.width = 85;
   this.height = 82;
-  this.speed = 0.5;
+  this.speed = 2;
   this.alive = true;
 
 }
 Orc.prototype.render = function() {
   var img = document.getElementById("enemy");
   ctx.drawImage(img, this.x, this.y);
-/*  ctx.fillStyle = "lightgreen";
-  ctx.fillRect(this.x, this.y, this.width, this.height);*/
+
 }
 Orc.prototype.update = function() {
   this.y = this.y + this.speed;
+}
+Orc.prototype.goalReached = function() {
+  if(this.y + this.height > 800){
+    this.alive = false;
+    player.hp = player.hp - 1;
+    console.log("OUCH")
+  }
 }
 
 var player = {
@@ -36,6 +42,7 @@ var player = {
   width: 20,
   height: 20,
   speed: 3,
+  hp: 3,
   counter: 21,
   loadingTime: 20,
   render: function() {
@@ -66,9 +73,9 @@ Bullet.prototype.hitsAnyOrc = function() {
     var hitX = this.x > orc.x && this.x < orc.x + orc.width;
     var hitY = this.y < orc.y + orc.height && this.y > orc.y;
     if(hitX && hitY){
-      console.log("ouch")
       orc.alive = false;
       this.alive = false;
+      game.score++;
     }
   });
 }
@@ -113,6 +120,11 @@ window.addEventListener("keyup", function(event) {
 function loop() {
   update();
   render();
+  if(player.hp == 0){
+    var img = document.getElementById("lose");
+    ctx.drawImage(img, 400, 500);
+    return;
+  }
   setTimeout(loop, 10);
 
 }
@@ -127,12 +139,11 @@ function update() {
 
   if(input.up === true) {
     player.counter++;
-console.log(player.counter);
+  console.log(player.counter);
     if(player.counter > player.loadingTime){
       var bullet = new Bullet();
       bullets.push(bullet);
       player.counter = 0;
-
     }
   }
 
@@ -145,6 +156,7 @@ console.log(player.counter);
   for (var i = 0; i < orcs.length; i++) {
     var orc = orcs[i];
     orc.update();
+    orc.goalReached();
   }
 
   for (var i = 0; i < bullets.length; i++) {
@@ -172,15 +184,21 @@ function render() {
     var bullet = bullets[i];
     bullet.render();
   }
+  renderGui();
+  renderScore();
 }
 
+function renderGui() {
+  var img = document.getElementById("hp");
+  for(var i = 0; i < player.hp; i++){
+    var x = 50 + i*25
+    ctx.drawImage(img, x, 50, 20, 20);
+  }
+}
 
-for (var i = 0; i < 3; i++) {
-  var x = Math.random()*canvas.width
-  var y = 0
-  var orc = new Orc(x, y);
-  orcs.push(orc);
-
+function renderScore() {
+  ctx.font = "20px Georgia"
+  ctx.fillText("Score: " + game.score, 800, 50);
 }
 
 loop();
