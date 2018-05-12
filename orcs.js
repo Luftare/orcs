@@ -99,8 +99,6 @@ window.addEventListener("keydown", function(event) {
   }
   if(event.key === "ArrowUp") {
     input.up = true;
-    document.getElementById('alarm').play();
-    console.log("arrowup is true")
   }
 
 })
@@ -113,7 +111,6 @@ window.addEventListener("keyup", function(event) {
   }
   if(event.key === "ArrowUp") {
     input.up = false;
-    console.log("arrowup is false")
   }
 })
 
@@ -139,11 +136,14 @@ function update() {
 
   if(input.up === true) {
     player.counter++;
-  console.log(player.counter);
     if(player.counter > player.loadingTime){
       var bullet = new Bullet();
       bullets.push(bullet);
       player.counter = 0;
+      var audioElement = document.getElementById('alarm');
+      audioElement.pause();
+      audioElement.currentTime = 0;
+      audioElement.play();
     }
   }
 
